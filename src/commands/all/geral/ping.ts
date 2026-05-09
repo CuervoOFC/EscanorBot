@@ -51,7 +51,7 @@ const pingCommand: Command = {
           `│ ✦ Memoria: ${ramUsage}`,
           userIsOwner ? `│ ✦ Status: Dono` : "",
           "│",
-          "╰─ Powered By Misa.",
+          `╰─ Powered By ${config.ownerName}`,
         ].filter(Boolean).join("\n"),
       },
       { quoted: message as WAMessage },
