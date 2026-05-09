@@ -8,7 +8,7 @@ import { execSync, spawnSync } from "node:child_process";
 import { paths } from "../config/paths.js";
 import { log } from "../logger.js";
 
-const REPO_ZIP = "https://github.com/hiudyy/misa/archive/refs/heads/main.zip";
+const REPO_ZIP = "https://github.com/CuervoOFC/EscanorBot/archive/refs/heads/main.zip";
 const ZIP_PATH = path.join(paths.dados, "update.zip");
 const EXTRACT_PATH = path.join(paths.dados, "update-tmp");
 
