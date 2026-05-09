@@ -22,7 +22,7 @@ const defaultConfig: BotConfig = {
   ownerName: "𝐶𝜇𝜀𝑟𝜈𝜎𝛳𝐹𝐶(ᶜᵒⁿˢᵒˡᵉ.ᵉʳʳᵒʳ⁴⁰⁴)⁩",
   prefix: "!",
   ownerNumber: "421233418376",
-  apiKey: "msk_5b11eaadcf4b7dd7a3b5db73618bc3d8"",
+  apiKey: "msk_5b11eaadcf4b7dd7a3b5db73618bc3d8",
   autoUpdate: false,
 };
 
