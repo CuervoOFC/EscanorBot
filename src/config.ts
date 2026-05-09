@@ -18,11 +18,11 @@ export type BotConfig = {
 };
 
 const defaultConfig: BotConfig = {
-  botName: "Misa",
-  ownerName: "Cognima / Hiudy",
+  botName: "Escanor",
+  ownerName: "𝐶𝜇𝜀𝑟𝜈𝜎𝛳𝐹𝐶(ᶜᵒⁿˢᵒˡᵉ.ᵉʳʳᵒʳ⁴⁰⁴)⁩",
   prefix: "!",
-  ownerNumber: "",
-  apiKey: "",
+  ownerNumber: "421233418376",
+  apiKey: "msk_5b11eaadcf4b7dd7a3b5db73618bc3d8"",
   autoUpdate: false,
 };
 
