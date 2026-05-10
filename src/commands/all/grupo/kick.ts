@@ -12,7 +12,6 @@ const kickCommand: Command = {
   category: "all",
   groupOnly: true,
   adminOnly: true,
-  botAdminRequired: true,
   async execute({ misa, message, from }) {
     const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
     
