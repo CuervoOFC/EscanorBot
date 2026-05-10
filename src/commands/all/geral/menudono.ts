@@ -23,6 +23,9 @@ const menuDonoCommand: Command = {
           "│",
           "├ 〔 dono 〕",
           `│  ♡ ${prefix}eval`,
+          `│  ♡ ${prefix}setbot [config]`
+          `│  ♡ ${prefix}update`,
+          `│  ♡ ${prefix}restart`,
           "│",
           "‧₊˚ ────────────────˚₊‧",
         ].join("\n"),
