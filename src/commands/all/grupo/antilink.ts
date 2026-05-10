@@ -3,8 +3,8 @@
  * @project Misa Bot
  */
 import { WAMessage } from "baileys";
-import { Command } from "../../../types/Command.js";
-import { getAntilinkData, saveAntilinkData } from "../../database/antilink.js";
+import { Command } from "../../../types/Command.ts";
+import { getAntilinkData, saveAntilinkData } from "../../../database.js";
 
 const antilinkCommand: Command = {
   name: "antilink",
