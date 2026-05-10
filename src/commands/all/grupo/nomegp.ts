@@ -12,7 +12,6 @@ const nomeGpCommand: Command = {
   category: "grupo",
   groupOnly: true,
   adminOnly: true,
-  botAdminRequired: true,
   async execute({ misa, message, from, args }) {
     if (args.length === 0) {
       await misa.sendMessage(
