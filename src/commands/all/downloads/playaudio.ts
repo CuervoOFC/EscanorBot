@@ -2,32 +2,42 @@
  * @author Hiudy · github.com/hiudyy
  * @project Misa Bot
  */
+
 import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
-import { misakaAPI } from "../../../helpers/misakaAPI.js";
 
-// Estructura de respuesta para la API
-type YoutubeAudioResponse = {
-  title?: string;
-  url: string; // Enlace directo al archivo MP3
-  thumbnail?: string;
+// Respuesta de la API Delirius
+type DeliriusResponse = {
+  creator: string;
+  status: boolean;
+  data: {
+    title: string;
+    author: string;
+    channel: string;
+    views: string;
+    likes: string;
+    image: string;
+    format: string;
+    download: string;
+  };
 };
 
 const ytmp3Command: Command = {
   name: "ytmp3",
   aliases: ["playaudio", "audio"],
-  description: "Baixa áudio (MP3) do YouTube",
+  description: "Descarga audio MP3 de YouTube",
   category: "all",
+
   async execute({ misa, message, from, args }) {
     if (args.length === 0) {
       await misa.sendMessage(from, {
         text: [
           "╭─「 *YOUTUBE MP3* 」",
           "│",
-          "│ ✦ Download:",
+          "│ ✦ Descargar:",
           "│   ytmp3 <url>",
           "│",
-          "╰─ Exemplo:",
+          "╰─ Ejemplo:",
           "   ytmp3 https://youtu.be/YVkUvmDQ3HY",
         ].join("\n"),
       });
@@ -36,46 +46,72 @@ const ytmp3Command: Command = {
 
     const url = args[0];
 
+    // Validar URL
     if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
-      await misa.sendMessage(from, { text: "❌ URL inválida." }, { quoted: message as WAMessage });
+      await misa.sendMessage(
+        from,
+        { text: "❌ URL inválida." },
+        { quoted: message as WAMessage }
+      );
       return;
     }
 
-    await misa.sendMessage(from, { text: "🎧 Convertendo para MP3..." }, { quoted: message as WAMessage });
+    await misa.sendMessage(
+      from,
+      { text: "🎧 Convirtiendo a MP3..." },
+      { quoted: message as WAMessage }
+    );
 
     try {
-      // Usamos el parámetro format: "mp3"
-      const data = await misakaAPI<YoutubeAudioResponse>("/youtube/download", { 
-        url: url,
-        format: "mp3" 
-      });
+      // API Delirius
+      const response = await fetch(
+        `https://api.delirius.store/download/ytmp3?url=${encodeURIComponent(url)}`
+      );
 
-      if (!data || !data.url) {
-        await misa.sendMessage(from, { text: "❌ Não foi possível obter o áudio." }, { quoted: message as WAMessage });
+      const result: DeliriusResponse = await response.json();
+
+      if (!result.status || !result.data?.download) {
+        await misa.sendMessage(
+          from,
+          { text: "❌ No se pudo obtener el audio." },
+          { quoted: message as WAMessage }
+        );
         return;
       }
 
-      // Enviamos como audio
+      // Enviar audio
       await misa.sendMessage(
         from,
         {
-          audio: { url: data.url },
-          mimetype: "audio/mp4", // O "audio/mpeg" según prefieras
-          ptt: false, // Cambia a true si quieres que se envíe como nota de voz
+          audio: { url: result.data.download },
+          mimetype: "audio/mpeg",
+          ptt: false,
         },
-        { quoted: message as WAMessage },
+        { quoted: message as WAMessage }
       );
 
-      // Opcional: Enviar mensaje de confirmación con el título
-      await misa.sendMessage(from, { text: `✅ Áudio enviado: *${data.title || "YouTube Audio"}*` });
+      // Confirmación
+      await misa.sendMessage(from, {
+        text: [
+          "✅ *Audio enviado correctamente*",
+          "",
+          `🎵 *Título:* ${result.data.title}`,
+          `👤 *Autor:* ${result.data.author}`,
+          `👀 *Vistas:* ${result.data.views}`,
+        ].join("\n"),
+      });
 
     } catch (error) {
       await misa.sendMessage(
         from,
         {
-          text: `❌ Erro: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
+          text: `❌ Error: ${
+            error instanceof Error
+              ? error.message
+              : "Error desconocido"
+          }`,
         },
-        { quoted: message as WAMessage },
+        { quoted: message as WAMessage }
       );
     }
   },
