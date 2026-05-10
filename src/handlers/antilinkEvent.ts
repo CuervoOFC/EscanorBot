@@ -2,54 +2,53 @@
  * @author Hiudy · github.com/hiudyy
  * @project Misa Bot
  */
-import { WAMessage, proto } from "baileys";
-import { Event } from "../types/Event.ts";
-import { getAntilinkData } from "../database.ts";
+import { proto } from "baileys";
+import { Event } from "../types/Event.js";
+import { getStatus } from "../commands/admin/antilink.js";
 
-const antilinkEvent: Event = {
+const antilinkMonitor: Event = {
   name: "antilink-monitor",
   event: "messages.upsert",
   async execute({ misa, data }) {
     const upsert = data as { messages: proto.IWebMessageInfo[] };
-    const message = upsert.messages[0];
-    if (!message?.message || message.key.fromMe) return;
+    const msg = upsert.messages[0];
 
-    const from = message.key.remoteJid!;
+    if (!msg.message || msg.key.fromMe) return;
+
+    const from = msg.key.remoteJid!;
     if (!from.endsWith("@g.us")) return;
 
-    const db = await getAntilinkData();
-    if (!db[from]) return; // Si no está activado en este grupo, ignorar
+    // Verificar si el antilink está ON para este grupo
+    const status = await getStatus();
+    if (!status[from]) return;
 
-    const body = message.message?.conversation || 
-                 message.message?.extendedTextMessage?.text || "";
+    const body = msg.message?.conversation || 
+                 msg.message?.extendedTextMessage?.text || 
+                 msg.message?.imageMessage?.caption || "";
 
-    // Regex para grupos/canales de WA y Telegram
     const linkRegex = /(chat.whatsapp.com\/[a-zA-Z0-9]+|whatsapp.com\/channel\/[a-zA-Z0-9]+|t.me\/[a-zA-Z0-9_]+)/gi;
 
     if (linkRegex.test(body)) {
-      const groupInviteCode = await misa.groupInviteCode(from).catch(() => null);
-      
-      // Si el link es del mismo grupo, no hacer nada
-      if (groupInviteCode && body.includes(groupInviteCode)) return;
+      // 1. Evitar que borre links del propio grupo
+      const code = await misa.groupInviteCode(from).catch(() => null);
+      if (code && body.includes(code)) return;
 
-      const groupMetadata = await misa.groupMetadata(from);
-      const sender = message.key.participant || message.key.remoteJid!;
-      const participant = groupMetadata.participants.find(p => p.id === sender);
-      const isAdmin = participant?.admin !== null;
+      const metadata = await misa.groupMetadata(from);
+      const sender = msg.key.participant || msg.key.remoteJid!;
+      const user = metadata.participants.find(p => p.id === sender);
+      const isAdmin = user?.admin !== null;
 
-      // ELIMINAR EL LINK (Acción común para todos)
-      await misa.sendMessage(from, { delete: message.key });
+      // ELIMINAR MENSAJE
+      await misa.sendMessage(from, { delete: msg.key });
 
       if (isAdmin) {
-        // Si es Admin, solo advertir
         await misa.sendMessage(from, { 
-          text: `⚠️ @${sender.split("@")[0]}, no mandes enlaces de otros grupos/canales aunque seas admin.`,
+          text: `⚠️ @${sender.split("@")[0]}, no envíes enlaces aunque seas admin.`,
           mentions: [sender]
         });
       } else {
-        // Si no es Admin, expulsar
         await misa.sendMessage(from, { 
-          text: `🚫 Enlace externo detectado. Adiós @${sender.split("@")[0]}!`,
+          text: `🚫 Enlace no permitido. @${sender.split("@")[0]} expulsado.`,
           mentions: [sender]
         });
         await misa.groupParticipantsUpdate(from, [sender], "remove");
@@ -58,4 +57,4 @@ const antilinkEvent: Event = {
   },
 };
 
-export default antilinkEvent;
+export default antilinkMonitor;
