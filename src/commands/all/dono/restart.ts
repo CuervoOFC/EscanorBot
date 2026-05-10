@@ -9,9 +9,10 @@ const restartCommand: Command = {
   category: "owner",
   ownerOnly: true,
   async execute({ misa, message, from }) {
+    const config = await getBotConfig();
     await misa.sendMessage(
       from,
-      { text: "✎ *Reiniciando Misa Bot...*\n> O socket será fechado e reconectado em breve." },
+      { text: `*Reiniciando ${config.botName}...*\n> O bot será fechado e reconectado em breve.` },
       { quoted: message as WAMessage }
     );
 
