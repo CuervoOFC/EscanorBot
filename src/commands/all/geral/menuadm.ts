@@ -29,6 +29,7 @@ const menuAdmCommand: Command = {
           `│  ♡ ${prefix}demote`,
           `│  ♡ ${prefix}nomegp`,
           `│  ♡ ${prefix}descgp`,
+          `│  ♡ ${prefix}tag`,
           "│",
           "├ 〔 bem-vindo 〕",
           `│  ♡ ${prefix}bemvindo`,
