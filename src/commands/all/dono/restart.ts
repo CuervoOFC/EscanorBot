@@ -1,5 +1,6 @@
 import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
+import { getBotConfig } from "../../../config.js";
 
 const restartCommand: Command = {
   name: "restart",
