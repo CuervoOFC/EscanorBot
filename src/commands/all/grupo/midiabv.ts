@@ -18,7 +18,6 @@ const midiabvCommand: Command = {
   category: "grupo",
   groupOnly: true,
   adminOnly: true,
-  botAdminRequired: true,
   async execute({ misa, message, from, args }) {
     if (args[0]?.toLowerCase() === "off") {
       const current = await getGroup(from);
