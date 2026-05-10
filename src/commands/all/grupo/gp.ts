@@ -12,7 +12,6 @@ const gpCommand: Command = {
   category: "grupo",
   groupOnly: true,
   adminOnly: true,
-  botAdminRequired: true,
   async execute({ misa, message, from, args }) {
     const opcao = args[0]?.toLowerCase();
 
