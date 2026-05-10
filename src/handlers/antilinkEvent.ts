@@ -3,8 +3,8 @@
  * @project Misa Bot
  */
 import { WAMessage, proto } from "baileys";
-import { Event } from "../types/Event.js";
-import { getAntilinkData } from "../database/antilink.js";
+import { Event } from "../types/Event.ts";
+import { getAntilinkData } from "../database.ts";
 
 const antilinkEvent: Event = {
   name: "antilink-monitor",
