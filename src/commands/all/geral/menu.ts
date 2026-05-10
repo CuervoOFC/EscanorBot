@@ -9,25 +9,30 @@ import { getBotConfig } from "../../../config.js";
 const menuCommand: Command = {
   name: "menu",
   aliases: ["help", "ajuda", "comandos"],
-  description: "Mostra o menu principal",
+  description: "Mostra o menu principal com imagem",
   category: "geral",
   async execute({ misa, message, from, prefix }) {
     const config = await getBotConfig();
 
+    const menuText = [
+      `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
+      "│",
+      `│  👤 *Dono:* ${config.ownerName}`,
+      "│",
+      `│  ♡ ${prefix}menugeral`,
+      `│  ♡ ${prefix}menudl`,
+      `│  ♡ ${prefix}menugrupo`,
+      `│  ♡ ${prefix}menuadm`,
+      `│  ♡ ${prefix}menudono`,
+      "│",
+      "‧₊˚ ────────────────˚₊‧",
+    ].join("\n");
+
     await misa.sendMessage(
       from,
       {
-        text: [
-          `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
-          "│",
-          `│  ♡ ${prefix}menugeral`,
-          `│  ♡ ${prefix}menudl`,
-          `│  ♡ ${prefix}menugrupo`,
-          `│  ♡ ${prefix}menuadm`,
-          `│  ♡ ${prefix}menudono`,
-          "│",
-          "‧₊˚ ────────────────˚₊‧",
-        ].join("\n"),
+        image: { url: config.botImage },
+        caption: menuText,
       },
       { quoted: message as WAMessage },
     );
