@@ -24,6 +24,7 @@ const defaultConfig: BotConfig = {
   ownerNumber: "421233418376",
   apiKey: "msk_5b11eaadcf4b7dd7a3b5db73618bc3d8",
   autoUpdate: false,
+  botImage: "",
 };
 
 const __filename = fileURLToPath(import.meta.url);
