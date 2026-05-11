@@ -12,6 +12,12 @@ export type GroupData = {
     legenda: string;
     midia: { tipo: "imagem" | "video"; path: string } | null;
   };
+
+  // NUEVO SISTEMA
+  nsfw: {
+    ativo: boolean;
+  };
+
   antilink: AntiLinkData;
   antilinkgp: AntiLinkData;
   antilinkch: AntiLinkData;
@@ -28,19 +34,28 @@ export type AntiLinkData = {
 const DEFAULT: GroupData = {
   bemvindo: {
     ativo: false,
-    legenda: "Seja bem-vindo(a), @usuario! 👋\nVocê é o membro de número @total do grupo *@grupo*.",
+    legenda:
+      "Seja bem-vindo(a), @usuario! 👋\nVocê é o membro de número @total do grupo *@grupo*.",
     midia: null,
   },
+
+  // NUEVO DEFAULT
+  nsfw: {
+    ativo: false,
+  },
+
   antilink: {
     ativo: false,
     punicao: "apagar",
     texto: "🚫 @usuario, links não são permitidos neste grupo.",
   },
+
   antilinkgp: {
     ativo: false,
     punicao: "apagar",
     texto: "🚫 @usuario, links de grupo não são permitidos neste grupo.",
   },
+
   antilinkch: {
     ativo: false,
     punicao: "apagar",
@@ -53,34 +68,98 @@ function groupPath(groupId: string): string {
   return path.join(paths.grupos, `${id}.json`);
 }
 
-export async function getGroup(groupId: string): Promise<GroupData> {
+export async function getGroup(
+  groupId: string,
+): Promise<GroupData> {
   try {
-    const raw = await fs.readFile(groupPath(groupId), "utf8");
+    const raw = await fs.readFile(
+      groupPath(groupId),
+      "utf8",
+    );
+
     const saved = JSON.parse(raw) as Partial<GroupData>;
+
     return {
       ...DEFAULT,
       ...saved,
-      bemvindo: { ...DEFAULT.bemvindo, ...saved.bemvindo },
-      antilink: { ...DEFAULT.antilink, ...saved.antilink },
-      antilinkgp: { ...DEFAULT.antilinkgp, ...saved.antilinkgp },
-      antilinkch: { ...DEFAULT.antilinkch, ...saved.antilinkch },
+
+      bemvindo: {
+        ...DEFAULT.bemvindo,
+        ...saved.bemvindo,
+      },
+
+      // NUEVO MERGE
+      nsfw: {
+        ...DEFAULT.nsfw,
+        ...saved.nsfw,
+      },
+
+      antilink: {
+        ...DEFAULT.antilink,
+        ...saved.antilink,
+      },
+
+      antilinkgp: {
+        ...DEFAULT.antilinkgp,
+        ...saved.antilinkgp,
+      },
+
+      antilinkch: {
+        ...DEFAULT.antilinkch,
+        ...saved.antilinkch,
+      },
     };
   } catch {
     return structuredClone(DEFAULT);
   }
 }
 
-export async function saveGroup(groupId: string, data: Partial<GroupData>): Promise<GroupData> {
-  await fs.mkdir(paths.grupos, { recursive: true });
+export async function saveGroup(
+  groupId: string,
+  data: Partial<GroupData>,
+): Promise<GroupData> {
+  await fs.mkdir(paths.grupos, {
+    recursive: true,
+  });
+
   const current = await getGroup(groupId);
+
   const updated: GroupData = {
     ...current,
     ...data,
-    bemvindo: { ...current.bemvindo, ...data.bemvindo },
-    antilink: { ...current.antilink, ...data.antilink },
-    antilinkgp: { ...current.antilinkgp, ...data.antilinkgp },
-    antilinkch: { ...current.antilinkch, ...data.antilinkch },
+
+    bemvindo: {
+      ...current.bemvindo,
+      ...data.bemvindo,
+    },
+
+    // NUEVO MERGE
+    nsfw: {
+      ...current.nsfw,
+      ...data.nsfw,
+    },
+
+    antilink: {
+      ...current.antilink,
+      ...data.antilink,
+    },
+
+    antilinkgp: {
+      ...current.antilinkgp,
+      ...data.antilinkgp,
+    },
+
+    antilinkch: {
+      ...current.antilinkch,
+      ...data.antilinkch,
+    },
   };
-  await fs.writeFile(groupPath(groupId), JSON.stringify(updated, null, 2), "utf8");
+
+  await fs.writeFile(
+    groupPath(groupId),
+    JSON.stringify(updated, null, 2),
+    "utf8",
+  );
+
   return updated;
 }
