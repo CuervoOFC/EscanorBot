@@ -11,7 +11,7 @@ const nsfwCommand: Command = {
   name: "nsfw",
   aliases: ["+18"],
   description: "Ativa ou desativa os comandos NSFW",
-  category: "grupo",
+  category: "nsfw",
   groupOnly: true,
   adminOnly: true,
 
