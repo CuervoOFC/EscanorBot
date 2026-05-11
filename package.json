@@ -20,7 +20,8 @@
   "dependencies": {
     "baileys": "^7.0.0-rc.9",
     "pino": "^9.7.0",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "fluent-ffmpeg": "*"
   },
   "devDependencies": {
     "@types/node": "^22.15.17",
