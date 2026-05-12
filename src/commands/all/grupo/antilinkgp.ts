@@ -20,7 +20,6 @@ const antilinkgpCommand: Command = {
   category: "grupo",
   groupOnly: true,
   adminOnly: true,
-  botAdminRequired: true,
   async execute({ misa, message, from, args, t }) {
     const config = await getGroup(from);
 
