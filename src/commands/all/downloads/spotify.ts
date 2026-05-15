@@ -100,7 +100,7 @@ const spotifyCommand: Command = {
         listText +=
           `*${index + 1}.* ${song.title}\n` +
           `> 👤 ${song.artist}\n` +
-          `> ✨️ ${song.url}` +
+          `> ✨️ ${song.url}\n` +
           `> 💿 ${song.album}\n\n`;
       });
 
