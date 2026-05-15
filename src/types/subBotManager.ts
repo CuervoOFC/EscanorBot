@@ -1,6 +1,7 @@
 import makeWASocket, {
   useMultiFileAuthState,
   DisconnectReason,
+  fetchLatestBaileysVersion,
 } from "baileys";
 
 import pino from "pino";
@@ -8,335 +9,169 @@ import fs from "fs";
 import path from "path";
 import NodeCache from "node-cache";
 
-const logger = pino({
-  level: "silent",
-});
+const logger = pino({ level: "silent" });
 
-const SUBBOT_PATH = "./database/subbots";
+const BASE_PATH = "./database/subbots";
 
 /**
- * SubBots activos
+ * Subbots activos
  */
-export const subBots =
-  new Map<string, any>();
+export const subBots = new Map<string, any>();
 
 /**
- * Evita múltiples conexiones
+ * Locks anti spam / freeze
  */
-const creatingBots =
-  new Set<string>();
+const creating = new Set<string>();
 
-function ensureDir(
-  dir: string,
-) {
+/**
+ * Utils
+ */
+function ensure(dir: string) {
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, {
-      recursive: true,
-    });
+    fs.mkdirSync(dir, { recursive: true });
   }
 }
 
 /**
- * Crear SubBot
+ * PRO CREATE SUBBOT
  */
-export async function createSubBot(
-  phone: string,
-) {
+export async function createSubBot(phone: string) {
+  phone = phone.replace(/\D/g, "");
 
-  /**
-   * Limpia número
-   */
-  phone =
-    phone.replace(/\D/g, "");
-
-  /**
-   * Validación
-   */
-  if (
-    !phone ||
-    phone.length < 10
-  ) {
-    throw new Error(
-      "Número inválido",
-    );
+  if (phone.length < 10) {
+    throw new Error("Número inválido");
   }
 
-  /**
-   * Límite
-   */
   if (subBots.size >= 3) {
-    throw new Error(
-      "Máximo 3 subbots activos",
-    );
+    throw new Error("Máximo 3 subbots activos");
   }
 
-  /**
-   * Evita spam
-   */
-  if (
-    creatingBots.has(phone)
-  ) {
-    throw new Error(
-      "Ya se está creando este subbot",
-    );
+  if (creating.has(phone)) {
+    throw new Error("Ya se está creando este subbot");
   }
 
-  creatingBots.add(phone);
+  creating.add(phone);
 
   try {
+    ensure(BASE_PATH);
 
-    ensureDir(SUBBOT_PATH);
+    const botId = `subbot_${Date.now()}`;
+    const authPath = path.join(BASE_PATH, botId);
 
-    /**
-     * ID
-     */
-    const botId =
-      `subbot_${Date.now()}`;
+    ensure(authPath);
 
     /**
-     * Carpeta auth
+     * 🔥 versión estable automática
      */
-    const authPath =
-      path.join(
-        SUBBOT_PATH,
-        botId,
-      );
+    const { version } = await fetchLatestBaileysVersion();
 
-    ensureDir(authPath);
+    const { state, saveCreds } =
+      await useMultiFileAuthState(authPath);
+
+    const sock = makeWASocket({
+      version,
+      auth: state,
+      logger,
+
+      browser: ["Chrome", "Windows", "10"],
+
+      msgRetryCounterCache: new NodeCache(),
+
+      connectTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 60000,
+      keepAliveIntervalMs: 15000,
+
+      emitOwnEvents: false,
+    });
+
+    sock.ev.on("creds.update", saveCreds);
 
     /**
-     * Auth
+     * 🔥 Espera REAL conexión (NO timeout fake)
      */
-    const {
-      state,
-      saveCreds,
-    } =
-      await useMultiFileAuthState(
-        authPath,
-      );
+    await new Promise((resolve, reject) => {
+      const t = setTimeout(() => {
+        reject(new Error("Timeout conexión subbot"));
+      }, 60000);
 
-    /**
-     * Socket
-     */
-    const sock =
-      makeWASocket({
-
-        auth: state,
-
-        logger,
-
-        browser: [
-          "Misa Bot",
-          "Chrome",
-          "1.0.0",
-        ],
-
-        /**
-         * Anti freeze
-         */
-        connectTimeoutMs:
-          60000,
-
-        defaultQueryTimeoutMs:
-          60000,
-
-        keepAliveIntervalMs:
-          10000,
-
-        emitOwnEvents:
-          false,
-
-        fireInitQueries:
-          false,
-
-        syncFullHistory:
-          false,
-
-        markOnlineOnConnect:
-          false,
-
-        msgRetryCounterCache:
-          new NodeCache(),
+      sock.ev.on("connection.update", (u) => {
+        if (u.connection === "open") {
+          clearTimeout(t);
+          resolve(true);
+        }
       });
+    });
 
     /**
-     * Guardar creds
+     * 🔑 pairing SOLO cuando está OPEN
      */
-    sock.ev.on(
-      "creds.update",
-      saveCreds,
-    );
+    const code = await sock.requestPairingCode(phone);
 
     /**
-     * Conexión
+     * Listener conexión
      */
-    sock.ev.on(
-      "connection.update",
-      async ({
-        connection,
-        lastDisconnect,
-      }) => {
+    sock.ev.on("connection.update", (u) => {
+      const { connection, lastDisconnect } = u;
+
+      if (connection === "open") {
+        console.log(`✅ SubBot conectado: ${botId}`);
+        subBots.set(botId, sock);
+      }
+
+      if (connection === "close") {
+        const reason =
+          (lastDisconnect?.error as any)?.output?.statusCode;
+
+        subBots.delete(botId);
+
+        console.log("❌ SubBot cerrado:", reason);
 
         /**
-         * Conectado
+         * ❌ NO auto-reconnect (evita freeze)
          */
-        if (
-          connection ===
-          "open"
-        ) {
-
-          console.log(
-            `✅ SubBot conectado: ${botId}`,
-          );
-
-          subBots.set(
-            botId,
-            sock,
-          );
+        if (reason === DisconnectReason.loggedOut) {
+          console.log("🗑️ SubBot deslogueado");
         }
-
-        /**
-         * Desconectado
-         */
-        if (
-          connection ===
-          "close"
-        ) {
-
-          const reason =
-            (lastDisconnect?.error as any)
-              ?.output?.statusCode;
-
-          console.log(
-            `❌ SubBot desconectado`,
-            reason,
-          );
-
-          /**
-           * Eliminar activo
-           */
-          subBots.delete(
-            botId,
-          );
-
-          /**
-           * NO reconectar automáticamente
-           * porque congela consola
-           */
-          if (
-            reason ===
-            DisconnectReason.loggedOut
-          ) {
-
-            console.log(
-              `🗑️ Sesión cerrada`,
-            );
-          }
-        }
-      },
-    );
-
-    /**
-     * Esperar socket
-     */
-    await new Promise(
-      (resolve) =>
-        setTimeout(
-          resolve,
-          3000,
-        ),
-    );
-
-    /**
-     * Pairing
-     */
-    const code =
-      await sock.requestPairingCode(
-        phone,
-      );
+      }
+    });
 
     return {
       botId,
       code,
     };
-
-  } catch (err) {
-
-    throw err;
-
   } finally {
-
-    /**
-     * Liberar bloqueo
-     */
-    creatingBots.delete(
-      phone,
-    );
+    creating.delete(phone);
   }
 }
 
 /**
- * Obtener SubBots
+ * LISTAR
  */
 export function getSubBots() {
-
-  return [
-    ...subBots.keys(),
-  ];
+  return [...subBots.keys()];
 }
 
 /**
- * Eliminar SubBot
+ * ELIMINAR PRO
  */
-export async function removeSubBot(
-  botId: string,
-) {
+export async function removeSubBot(botId: string) {
+  const sock = subBots.get(botId);
 
-  /**
-   * Socket
-   */
-  const bot =
-    subBots.get(botId);
-
-  /**
-   * Logout
-   */
-  if (bot) {
-
+  if (sock) {
     try {
-
-      await bot.logout();
-
+      await sock.logout();
     } catch {}
 
-    subBots.delete(
-      botId,
-    );
+    subBots.delete(botId);
   }
 
-  /**
-   * Carpeta
-   */
-  const authPath =
-    path.join(
-      SUBBOT_PATH,
-      botId,
-    );
+  const folder = path.join(BASE_PATH, botId);
 
-  /**
-   * Existe
-   */
-  if (
-    fs.existsSync(authPath)
-  ) {
-
-    fs.rmSync(
-      authPath,
-      {
-        recursive: true,
-        force: true,
-      },
-    );
+  if (fs.existsSync(folder)) {
+    fs.rmSync(folder, {
+      recursive: true,
+      force: true,
+    });
   }
 
   return true;
