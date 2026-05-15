@@ -4,11 +4,11 @@ import makeWASocket, {
   fetchLatestBaileysVersion,
 } from "baileys";
 
-import qrcode from "qrcode-terminal";
-import pino from "pino";
 import fs from "fs";
 import path from "path";
 import NodeCache from "node-cache";
+import pino from "pino";
+import { generateQRImage } from "./qrImage.js";
 
 const logger = pino({ level: "silent" });
 
@@ -21,10 +21,7 @@ function ensure(dir: string) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-/**
- * 🔥 CREAR SUBBOT (PAIRING + QR FALLBACK)
- */
-export async function createSubBot(phone: string) {
+export async function createSubBot(phone: string, sendQR?: Function) {
   phone = phone.replace(/\D/g, "");
 
   if (creating.has(phone)) {
@@ -59,12 +56,11 @@ export async function createSubBot(phone: string) {
     sock.ev.on("creds.update", saveCreds);
 
     let pairingCode: string | null = null;
-    let qrFallback = false;
 
     /**
      * 🔥 CONNECTION HANDLER
      */
-    sock.ev.on("connection.update", (u) => {
+    sock.ev.on("connection.update", async (u) => {
       const { connection, qr, lastDisconnect } = u;
 
       if (connection === "open") {
@@ -81,54 +77,48 @@ export async function createSubBot(phone: string) {
         console.log("❌ SubBot cerrado:", reason);
 
         if (reason === DisconnectReason.loggedOut) {
-          console.log("🗑️ SubBot eliminado (logout)");
+          console.log("🗑️ SubBot eliminado");
         }
       }
 
       /**
-       * 🔵 QR fallback
+       * 🔵 QR EN IMAGEN (FALLBACK)
        */
-      if (qr && qrFallback) {
-        console.log("📲 QR de emergencia:");
-        qrcode.generate(qr, { small: true });
+      if (qr && sendQR) {
+        try {
+          const file = await generateQRImage(qr, botId);
+
+          await sendQR(file, botId);
+        } catch (e) {
+          console.log("Error QR imagen:", e);
+        }
       }
     });
 
     /**
-     * 🔥 PAIRING PRINCIPAL
+     * 🔥 PAIRING PRINCIPAL (RC7 SAFE)
      */
     try {
       pairingCode = await sock.requestPairingCode(phone);
     } catch (err) {
-      console.log("⚠️ Pairing falló → activando QR fallback");
-      qrFallback = true;
+      console.log("⚠️ Pairing falló, QR fallback activo");
     }
 
-    /**
-     * Guardar socket
-     */
     subBots.set(botId, sock);
 
     return {
       botId,
       code: pairingCode,
-      fallback: qrFallback ? "qr" : "pairing",
     };
   } finally {
     creating.delete(phone);
   }
 }
 
-/**
- * LISTAR SUBBOTS
- */
 export function getSubBots() {
   return [...subBots.keys()];
 }
 
-/**
- * ELIMINAR SUBBOT
- */
 export async function removeSubBot(botId: string) {
   const sock = subBots.get(botId);
 
@@ -143,4 +133,8 @@ export async function removeSubBot(botId: string) {
   const folder = path.join(BASE_PATH, botId);
 
   if (fs.existsSync(folder)) {
-    fs.rmSync(folder, { recursive: true,
+    fs.rmSync(folder, { recursive: true, force: true });
+  }
+
+  return true;
+}
