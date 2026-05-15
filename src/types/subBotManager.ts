@@ -1,7 +1,6 @@
 import makeWASocket, {
   useMultiFileAuthState,
   DisconnectReason,
-  fetchLatestBaileysVersion,
 } from "baileys";
 
 import pino from "pino";
@@ -13,28 +12,15 @@ const logger = pino({ level: "silent" });
 
 const BASE_PATH = "./database/subbots";
 
-/**
- * Subbots activos
- */
 export const subBots = new Map<string, any>();
-
-/**
- * Locks anti spam / freeze
- */
 const creating = new Set<string>();
 
-/**
- * Utils
- */
 function ensure(dir: string) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
 
-/**
- * PRO CREATE SUBBOT
- */
 export async function createSubBot(phone: string) {
   phone = phone.replace(/\D/g, "");
 
@@ -47,7 +33,7 @@ export async function createSubBot(phone: string) {
   }
 
   if (creating.has(phone)) {
-    throw new Error("Ya se está creando este subbot");
+    throw new Error("Este subbot ya se está creando");
   }
 
   creating.add(phone);
@@ -60,20 +46,24 @@ export async function createSubBot(phone: string) {
 
     ensure(authPath);
 
-    /**
-     * 🔥 versión estable automática
-     */
-    const { version } = await fetchLatestBaileysVersion();
-
     const { state, saveCreds } =
       await useMultiFileAuthState(authPath);
+
+    /**
+     * 🔥 RC 7 FIX: versión FIJA (NO fetchLatestBaileysVersion)
+     */
+    const version = [2, 3000, 1020000000];
 
     const sock = makeWASocket({
       version,
       auth: state,
       logger,
 
-      browser: ["Chrome", "Windows", "10"],
+      browser: [
+        "Chrome (Linux)",
+        "Ubuntu",
+        "20.04",
+      ],
 
       msgRetryCounterCache: new NodeCache(),
 
@@ -87,73 +77,82 @@ export async function createSubBot(phone: string) {
     sock.ev.on("creds.update", saveCreds);
 
     /**
-     * 🔥 Espera REAL conexión (NO timeout fake)
+     * 🔥 IMPORTANTE RC7:
+     * NO dependemos de "open"
      */
-    await new Promise((resolve, reject) => {
-      const t = setTimeout(() => {
-        reject(new Error("Timeout conexión subbot"));
-      }, 60000);
+    let ready = false;
+
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        console.log("⚠️ Timeout, continuando sin open...");
+        resolve();
+      }, 25000);
 
       sock.ev.on("connection.update", (u) => {
-        if (u.connection === "open") {
-          clearTimeout(t);
-          resolve(true);
+        const { connection } = u;
+
+        if (connection === "connecting") {
+          console.log("🔄 Conectando subbot...");
+        }
+
+        if (connection === "open") {
+          ready = true;
+          clearTimeout(timeout);
+          resolve();
+        }
+
+        if (connection === "close") {
+          const reason =
+            (u.lastDisconnect?.error as any)
+              ?.output?.statusCode;
+
+          console.log("❌ SubBot cerrado:", reason);
+
+          subBots.delete(botId);
+
+          if (
+            reason === DisconnectReason.loggedOut
+          ) {
+            console.log("🗑️ SubBot logout");
+          }
         }
       });
     });
 
     /**
-     * 🔑 pairing SOLO cuando está OPEN
+     * 🔑 Pairing RC7 (NO depende de open)
      */
-    const code = await sock.requestPairingCode(phone);
+    let code: string | undefined;
+
+    try {
+      code = await sock.requestPairingCode(phone);
+    } catch (err) {
+      throw new Error(
+        "Error pairing RC7: WhatsApp bloqueó handshake o socket no listo"
+      );
+    }
 
     /**
-     * Listener conexión
+     * Guardar socket si está usable
      */
-    sock.ev.on("connection.update", (u) => {
-      const { connection, lastDisconnect } = u;
-
-      if (connection === "open") {
-        console.log(`✅ SubBot conectado: ${botId}`);
-        subBots.set(botId, sock);
-      }
-
-      if (connection === "close") {
-        const reason =
-          (lastDisconnect?.error as any)?.output?.statusCode;
-
-        subBots.delete(botId);
-
-        console.log("❌ SubBot cerrado:", reason);
-
-        /**
-         * ❌ NO auto-reconnect (evita freeze)
-         */
-        if (reason === DisconnectReason.loggedOut) {
-          console.log("🗑️ SubBot deslogueado");
-        }
-      }
-    });
+    if (ready) {
+      subBots.set(botId, sock);
+    }
 
     return {
       botId,
       code,
     };
+
   } finally {
     creating.delete(phone);
   }
 }
 
-/**
- * LISTAR
- */
 export function getSubBots() {
   return [...subBots.keys()];
 }
 
-/**
- * ELIMINAR PRO
- */
 export async function removeSubBot(botId: string) {
   const sock = subBots.get(botId);
 
