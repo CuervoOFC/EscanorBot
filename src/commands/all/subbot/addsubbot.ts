@@ -1,11 +1,28 @@
-import { Command } from "../../../types/Command.ts";
+/**
+ * @author Damian
+ */
+
 import { WAMessage } from "baileys";
 
-import { createSubBot } from "../../../types/subBotManager.ts";
+import { Command }
+from "../../../types/Command.js";
+
+import {
+  createSubBot,
+} from "../../../utils/subBotManager.js";
 
 const addsubCommand: Command = {
+
   name: "addsubbot",
-  description: "Crea un subbot",
+
+  aliases: [
+    "subbot",
+  ],
+
+  description:
+    "Crea un subbot",
+
+  category: "dono",
 
   async execute({
     misa,
@@ -14,15 +31,23 @@ const addsubCommand: Command = {
     args,
   }) {
 
-    const phone = args[0];
+    const phone =
+      args[0];
 
     if (!phone) {
+
       return await misa.sendMessage(
         from,
         {
-          text: "Ejemplo:\n!addsubbot 5214420000000",
+          text:
+`Ejemplo:
+
+!addsubbot 5214421234567`,
         },
-        { quoted: message as WAMessage }
+        {
+          quoted:
+            message as WAMessage,
+        },
       );
     }
 
@@ -31,12 +56,19 @@ const addsubCommand: Command = {
       await misa.sendMessage(
         from,
         {
-          text: "⏳ Creando subbot...",
+          text:
+            "⏳ Creando subbot...",
         },
-        { quoted: message as WAMessage }
+        {
+          quoted:
+            message as WAMessage,
+        },
       );
 
-      const result = await createSubBot(phone);
+      const result =
+        await createSubBot(
+          phone,
+        );
 
       await misa.sendMessage(
         from,
@@ -47,14 +79,19 @@ const addsubCommand: Command = {
 🆔 ID:
 ${result.botId}
 
-🔑 Código:
+🔑 CÓDIGO:
 ${result.code}
 
-📲 Ve a:
-WhatsApp > Dispositivos vinculados
-> Vincular con número`,
+📲 Vincula el número en:
+
+WhatsApp
+→ Dispositivos vinculados
+→ Vincular con número`,
         },
-        { quoted: message as WAMessage }
+        {
+          quoted:
+            message as WAMessage,
+        },
       );
 
     } catch (err: any) {
@@ -62,11 +99,16 @@ WhatsApp > Dispositivos vinculados
       await misa.sendMessage(
         from,
         {
-          text: `❌ Error:\n${err.message}`,
-        },
-        { quoted: message as WAMessage }
-      );
+          text:
+`❌ Error:
 
+${err.message}`,
+        },
+        {
+          quoted:
+            message as WAMessage,
+        },
+      );
     }
   },
 };
