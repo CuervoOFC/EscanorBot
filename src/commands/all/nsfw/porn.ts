@@ -10,7 +10,7 @@ import { getGroup } from "../../../database/groupDB.js";
 
 const pornCommand: Command = {
   name: "porn",
-  aliases: ["nsfw"],
+  aliases: ["xxx"],
   description: "Envia imagens NSFW",
   category: "nsfw",
   groupOnly: true,
