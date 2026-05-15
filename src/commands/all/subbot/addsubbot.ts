@@ -1,7 +1,7 @@
-import { Command } from "../../../types/Command.js";
+import { Command } from "../../../types/Command.ts";
 import { WAMessage } from "baileys";
 
-import { createSubBot } from "../../../utils/subBotManager.js";
+import { createSubBot } from "../../../types/subBotManager.ts";
 
 const addsubCommand: Command = {
   name: "addsubbot",
