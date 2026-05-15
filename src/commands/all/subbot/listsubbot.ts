@@ -1,13 +1,20 @@
-import { Command } from "../../../types/Command.ts";
+import { Command }
+from "../../../types/Command.ts";
 
 import {
   getSubBots,
 } from "../../../types/subBotManager.ts";
 
 const listsubCommand: Command = {
+
   name: "listsubbots",
 
-  description: "Lista subbots",
+  aliases: [
+    "subbots",
+  ],
+
+  description:
+    "Lista subbots",
 
   category: "dono",
 
@@ -16,15 +23,17 @@ const listsubCommand: Command = {
     from,
   }) {
 
-    const bots = getSubBots();
+    const bots =
+      getSubBots();
 
     if (!bots.length) {
 
       return await misa.sendMessage(
         from,
         {
-          text: "No hay subbots activos",
-        }
+          text:
+            "❌ No hay subbots activos",
+        },
       );
     }
 
@@ -33,17 +42,24 @@ const listsubCommand: Command = {
 
 `;
 
-    bots.forEach((bot, i) => {
+    bots.forEach(
+      (
+        bot,
+        index,
+      ) => {
 
-      text += `${i + 1}. ${bot}\n`;
+        text +=
+`${index + 1}. ${bot}
 
-    });
+`;
+      },
+    );
 
     await misa.sendMessage(
       from,
       {
         text,
-      }
+      },
     );
   },
 };
