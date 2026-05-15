@@ -5,11 +5,11 @@
 import { WAMessage } from "baileys";
 
 import { Command }
-from "../../../types/Command.js";
+from "../../../types/Command.ts";
 
 import {
   createSubBot,
-} from "../../../utils/subBotManager.js";
+} from "../../../types/subBotManager.ts";
 
 const addsubCommand: Command = {
 
