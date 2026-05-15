@@ -1,19 +1,12 @@
-/**
- * @author Damian
- */
-
-import { Command } from "../../../types/Command.ts";
-
-import fs from "fs";
-import path from "path";
+import { Command }
+from "../../../types/Command.ts";
 
 import {
-  subBots,
+  removeSubBot,
 } from "../../../types/subBotManager.ts";
 
-const SUBBOT_PATH = "../../../types/database/subbots";
+const delsubCommand: Command = {
 
-const command: Command = {
   name: "removesubbot",
 
   aliases: [
@@ -21,7 +14,8 @@ const command: Command = {
     "rmsubbot",
   ],
 
-  description: "Elimina un subbot",
+  description:
+    "Elimina un subbot",
 
   category: "dono",
 
@@ -31,7 +25,8 @@ const command: Command = {
     args,
   }) {
 
-    const botId = args[0];
+    const botId =
+      args[0];
 
     if (!botId) {
 
@@ -42,47 +37,15 @@ const command: Command = {
 `Ejemplo:
 
 !removesubbot subbot_123456`,
-        }
+        },
       );
     }
 
     try {
 
-      const bot =
-        subBots.get(botId);
-
-      if (bot) {
-
-        try {
-
-          await bot.logout();
-
-        } catch {}
-
-        subBots.delete(botId);
-      }
-
-      const authPath =
-        path.join(
-          SUBBOT_PATH,
-          botId,
-        );
-
-      if (!fs.existsSync(authPath)) {
-
-        return await misa.sendMessage(
-          from,
-          {
-            text:
-`❌ Subbot no encontrado`,
-          }
-        );
-      }
-
-      fs.rmSync(authPath, {
-        recursive: true,
-        force: true,
-      });
+      await removeSubBot(
+        botId,
+      );
 
       await misa.sendMessage(
         from,
@@ -90,9 +53,8 @@ const command: Command = {
           text:
 `✅ Subbot eliminado
 
-🆔 ID:
-${botId}`,
-        }
+🆔 ${botId}`,
+        },
       );
 
     } catch (err: any) {
@@ -104,10 +66,10 @@ ${botId}`,
 `❌ Error:
 
 ${err.message}`,
-        }
+        },
       );
     }
   },
 };
 
-export default command;
+export default delsubCommand;
