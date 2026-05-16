@@ -9,8 +9,8 @@ import { Command } from "../../../types/Command.ts";
 import { getGroup } from "../../../database/groupDB.ts";
 
 const yuriCommand: Command = {
-  name: "girls",
-  aliases: ["nsfwgirls"],
+  name: "yuri",
+  aliases: ["nsfwyuri"],
   description: "Envia imagens NSFW",
   category: "nsfw",
   groupOnly: true,
