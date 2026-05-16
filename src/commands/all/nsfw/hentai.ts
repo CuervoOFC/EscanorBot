@@ -9,8 +9,8 @@ import { Command } from "../../../types/Command.ts";
 import { getGroup } from "../../../database/groupDB.ts";
 
 const hentaiCommand: Command = {
-  name: "girls",
-  aliases: ["nsfwgirls"],
+  name: "hentai",
+  aliases: ["nsfwhentai"],
   description: "Envia imagens NSFW",
   category: "nsfw",
   groupOnly: true,
