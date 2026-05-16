@@ -5,8 +5,8 @@
 
 import axios from "axios";
 import { WAMessage } from "baileys";
-import { Command } from "../../../types/Command.js";
-import { getGroup } from "../../../database/groupDB.js";
+import { Command } from "../../../types/Command.ts";
+import { getGroup } from "../../../database/groupDB.ts";
 
 const videoCommand: Command = {
   name: "pornvid",
