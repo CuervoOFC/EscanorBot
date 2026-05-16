@@ -6,10 +6,10 @@ import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
 import { getBotConfig } from "../../../config.js";
 
-const menuCommand: Command = {
-  name: "menu",
-  aliases: ["help", "ajuda", "comandos"],
-  description: "Mostra o menu principal com imagem",
+const menuadmCommand: Command = {
+  name: "menuadm",
+  aliases: ["menuadmin"],
+  description: "Mostra o menu admin",
   category: "geral",
   async execute({ misa, message, from, prefix }) {
     const config = await getBotConfig();
@@ -46,4 +46,4 @@ const menuCommand: Command = {
   },
 };
 
-export default menuCommand;
+export default menuadmCommand;
