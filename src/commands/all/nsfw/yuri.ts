@@ -39,7 +39,7 @@ const yuriCommand: Command = {
       // API
       // =========================
       const { data } = await axios.get(
-        "https://api.evogb.org/nsfw/random/yuri",
+        "https://api.evogb.org/nsfw/random/yuri?key=evogb-WzR3kPpa",
       );
 
       if (!data.status) {
