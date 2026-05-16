@@ -6,7 +6,7 @@ import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
 import { getBotConfig } from "../../../config.js";
 
-const menuCommand: Command = {
+const menunsfwCommand: Command = {
   name: "menunsfw",
   aliases: ["menuhot"],
   description: "Mostra o menu nsfw",
@@ -39,4 +39,4 @@ const menuCommand: Command = {
   },
 };
 
-export default menuCommand;
+export default menunsfwCommand;
