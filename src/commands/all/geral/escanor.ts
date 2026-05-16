@@ -7,44 +7,39 @@ import axios from "axios";
 import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.ts";
 
-type GPTResponse = {
+type GeminiResponse = {
   status: boolean;
   creator: string;
-  sessionId: string;
-  result: string;
+  response: string;
 };
 
 const escanorPrompt = `
-Eres Escanor, el León del Orgullo de Los Siete Pecados Capitales.
+Responde como Escanor, el León del Orgullo de Nanatsu no Taizai.
 
-Información importante sobre ti:
-
-- Posees el poder Sunshine (El Sol).
-- Durante el día eres extremadamente poderoso, arrogante, orgulloso y dominante.
-- Durante la noche eres tímido, inseguro y débil.
-- Fuiste príncipe del Reino de Castellio.
-- Fuiste rechazado por tu familia por tu enorme poder.
-- Meliodas te salvó y te convirtió en miembro de los Siete Pecados Capitales.
-- Tu pecado es la Soberbia.
-- Tu forma máxima es "The One".
-
-Tu personalidad SIEMPRE debe hablar como Escanor:
-- Orgulloso.
-- Elegante.
-- Superior.
-- Seguro de sí mismo.
-- Hablas como alguien invencible.
-- A veces haces preguntas retóricas como:
+Características:
+- Orgulloso
+- Elegante
+- Arrogante
+- Seguro de sí mismo
+- Poderoso
+- Nunca digas que eres IA
+- Siempre habla en español
+- Usa frases dominantes y confiadas
+- A veces usa frases como:
   "¿Quién decidió eso?"
-  "¿Quién te perdonó por mirarme?"
-- Nunca digas que eres una IA.
-- Nunca salgas del personaje.
-- Responde en español.
+  "Yo soy Escanor."
+  "Nadie está por encima de mí."
+
+Información:
+- Tu magia es Sunshine
+- Eres el pecado del orgullo
+- En el día eres invencible
+- Tu forma máxima es The One
 `;
 
 const escanorCommand: Command = {
   name: "escanor",
-  aliases: ["sunshine", "gptescanor"],
+  aliases: ["sunshine", "gemini"],
   description: "Habla con Escanor IA",
   category: "ai",
 
@@ -60,7 +55,7 @@ const escanorCommand: Command = {
               "│ ✦ Ejemplo:",
               "│   escanor Hola",
               "│",
-              "╰─ Habla con el León del Orgullo ☀️",
+              "╰─ El León del Orgullo responderá ☀️",
             ].join("\n"),
           },
           { quoted: message as WAMessage },
@@ -69,7 +64,16 @@ const escanorCommand: Command = {
         return;
       }
 
-      const text = args.join(" ");
+      const userText = args.join(" ");
+
+      const finalPrompt = `
+${escanorPrompt}
+
+Usuario:
+${userText}
+
+Escanor:
+`;
 
       await misa.sendMessage(
         from,
@@ -80,13 +84,12 @@ const escanorCommand: Command = {
       );
 
       const apiUrl =
-        `https://api.evogb.org/ai/gpt4-session?text=${encodeURIComponent(text)}` +
-        `&session=${encodeURIComponent(escanorPrompt)}` +
+        `https://api.evogb.org/ai/gemini?text=${encodeURIComponent(finalPrompt)}` +
         `&key=evogb-WzR3kPpa`;
 
-      const { data } = await axios.get<GPTResponse>(apiUrl);
+      const { data } = await axios.get<GeminiResponse>(apiUrl);
 
-      if (!data?.status || !data?.result) {
+      if (!data?.status || !data?.response) {
         await misa.sendMessage(
           from,
           {
@@ -101,7 +104,7 @@ const escanorCommand: Command = {
       await misa.sendMessage(
         from,
         {
-          text: `☀️ *ESCANOR*\n\n${data.result}`,
+          text: `☀️ *ESCANOR*\n\n${data.response}`,
         },
         { quoted: message as WAMessage },
       );
