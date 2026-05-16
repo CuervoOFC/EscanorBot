@@ -23,8 +23,8 @@ type DeliriusVideoResponse = {
 };
 
 const ytmp4Command: Command = {
-  name: "youtube2",
-  aliases: ["yt2", "ytdl2"],
+  name: "ytmp4",
+  aliases: ["video"],
   description: "Descarga videos de YouTube",
   category: "all",
 
