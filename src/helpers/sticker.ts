@@ -1,5 +1,5 @@
 /**
- * @author Hiudy · github.com/hiudyy
+ * @author Hiudy · github.com/hiudyy s
  * @project Misa Bot
  */
 import { promises as fs } from "node:fs";
