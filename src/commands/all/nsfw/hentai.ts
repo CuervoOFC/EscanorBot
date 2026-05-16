@@ -101,4 +101,4 @@ const hentaiCommand: Command = {
   },
 };
 
-export default hentiCommand;
+export default hentaiCommand;
