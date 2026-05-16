@@ -24,7 +24,7 @@ type DeliriusResponse = {
 
 const ytmp3Command: Command = {
   name: "ytmp3",
-  aliases: ["playaudio", "audio"],
+  aliases: ["audio"],
   description: "Descarga audio MP3 de YouTube",
   category: "all",
 
