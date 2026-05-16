@@ -24,6 +24,7 @@ const menuCommand: Command = {
       `│  ♡ ${prefix}menugrupo`,
       `│  ♡ ${prefix}menuadm`,
       `│  ♡ ${prefix}menudono`,
+      `│  ♡ ${prefix}menunsfw`,
       "│",
       "‧₊˚ ────────────────˚₊‧",
     ].join("\n");
