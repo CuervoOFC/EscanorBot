@@ -6,33 +6,36 @@ import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
 import { getBotConfig } from "../../../config.js";
 
-const menuDonoCommand: Command = {
+const menudonoCommand: Command = {
   name: "menudono",
-  aliases: ["mdono"],
-  description: "Mostra os comandos do dono",
+  aliases: ["menuowner"],
+  description: "Mostra o menu principal com imagem",
   category: "geral",
   ownerOnly: true,
   async execute({ misa, message, from, prefix }) {
     const config = await getBotConfig();
 
-    await misa.sendMessage(
-      from,
-      {
-        text: [
-          `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
+    const menuText = [
+      `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
           "│",
           "├ 〔 dono 〕",
           `│  ♡ ${prefix}eval`,
-          `│  ♡ ${prefix}setbot [config]`
+          `│  ♡ ${prefix}setbot [config]`,
           `│  ♡ ${prefix}update`,
           `│  ♡ ${prefix}restart`,
           "│",
           "‧₊˚ ────────────────˚₊‧",
-        ].join("\n"),
+    ].join("\n");
+
+    await misa.sendMessage(
+      from,
+      {
+        image: { url: config.botImage },
+        caption: menuText,
       },
       { quoted: message as WAMessage },
     );
   },
 };
 
-export default menuDonoCommand;
+export default menudonoCommand;
