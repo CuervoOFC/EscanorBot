@@ -2,9 +2,14 @@
  * @author Hiudy · github.com/hiudyy
  * @project Misa Bot
  */
+
 import { WAMessage } from "baileys";
-import { AntiLinkPunicao, getGroup, saveGroup } from "../../../database/groupDB.js";
-import { Command } from "../../../types/Command.js";
+import {
+  AntiLinkPunicao,
+  getGroup,
+  saveGroup,
+} from "../../../database/groupDB.ts";
+import { Command } from "../../../types/Command.ts";
 
 const PARAMS = [
   "@usuario   → menciona o usuário",
@@ -20,73 +25,140 @@ const antilinkgpCommand: Command = {
   category: "grupo",
   groupOnly: true,
   adminOnly: true,
-  async execute({ misa, message, from, args, t }) {
+
+  async execute({ misa, message, from, args }) {
     const config = await getGroup(from);
 
+    // =========================
+    // ATIVAR / DESATIVAR
+    // =========================
     if (args.length === 0) {
       const novoEstado = !config.antilinkgp.ativo;
-      await saveGroup(from, { antilinkgp: { ...config.antilinkgp, ativo: novoEstado } });
+
+      await saveGroup(from, {
+        antilinkgp: {
+          ...config.antilinkgp,
+          ativo: novoEstado,
+        },
+      });
+
       await misa.sendMessage(
         from,
         {
-          text: novoEstado ? t("commands.antilinkgp.enabled") : t("commands.antilinkgp.disabled") + "\n\n" + t("commands.antilinkgp.settingsHint"),
+          text: novoEstado
+            ? "✅ Anti-link de grupo ativado."
+            : "❌ Anti-link de grupo desativado.\n\nUse:\n• antilinkgp punicao apagar\n• antilinkgp punicao banir\n• antilinkgp texto <mensagem>",
         },
         { quoted: message as WAMessage },
       );
+
       return;
     }
 
     const action = args[0].toLowerCase();
 
+    // =========================
+    // PUNIÇÃO
+    // =========================
     if (action === "punicao") {
-      const punicao = args[1]?.toLowerCase() as AntiLinkPunicao | undefined;
+      const punicao = args[1]?.toLowerCase() as
+        | AntiLinkPunicao
+        | undefined;
+
       if (punicao !== "apagar" && punicao !== "banir") {
         await misa.sendMessage(
           from,
-          { text: t("commands.antilinkgp.invalidPunishment") },
+          {
+            text:
+              "❌ Punição inválida.\n\nUse:\n• apagar\n• banir",
+          },
           { quoted: message as WAMessage },
         );
+
         return;
       }
 
-      await saveGroup(from, { antilinkgp: { ...config.antilinkgp, punicao } });
+      await saveGroup(from, {
+        antilinkgp: {
+          ...config.antilinkgp,
+          punicao,
+        },
+      });
+
       await misa.sendMessage(
         from,
-        { text: t("commands.antilinkgp.punishmentUpdated", { value: punicao }) },
+        {
+          text: `✅ Punição alterada para: *${punicao}*`,
+        },
         { quoted: message as WAMessage },
       );
+
       return;
     }
 
+    // =========================
+    // TEXTO PERSONALIZADO
+    // =========================
     if (action === "texto") {
       if (args.length === 1) {
         await misa.sendMessage(
           from,
           {
-            text: t("commands.antilinkgp.textHeader", {
-              params: t("commands.antilinkgp.params"),
-              current: config.antilinkgp.texto,
-            }),
+            text: [
+              "╭─「 TEXTO ANTI-LINK 」",
+              "│",
+              "│ Parâmetros disponíveis:",
+              `│ ${PARAMS}`,
+              "│",
+              "│ Texto atual:",
+              `│ ${config.antilinkgp.texto || "Nenhum"}`,
+              "╰────────────",
+            ].join("\n"),
           },
           { quoted: message as WAMessage },
         );
+
         return;
       }
 
       const texto = args.slice(1).join(" ");
-      await saveGroup(from, { antilinkgp: { ...config.antilinkgp, texto } });
+
+      await saveGroup(from, {
+        antilinkgp: {
+          ...config.antilinkgp,
+          texto,
+        },
+      });
+
       await misa.sendMessage(
         from,
-        { text: t("commands.antilinkgp.textUpdated", { text: texto }) },
+        {
+          text: `✅ Texto atualizado:\n\n${texto}`,
+        },
         { quoted: message as WAMessage },
       );
+
       return;
     }
 
+    // =========================
+    // AYUDA
+    // =========================
     await misa.sendMessage(
       from,
       {
-        text: t("commands.antilinkgp.usage"),
+        text: [
+          "╭─「 ANTI-LINK GRUPO 」",
+          "│",
+          "│ ✦ Comandos:",
+          "│",
+          "│ • antilinkgp",
+          "│ • antilinkgp punicao apagar",
+          "│ • antilinkgp punicao banir",
+          "│ • antilinkgp texto <mensagem>",
+          "│",
+          "╰────────────",
+        ].join("\n"),
       },
       { quoted: message as WAMessage },
     );
