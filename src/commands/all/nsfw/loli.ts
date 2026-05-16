@@ -8,7 +8,7 @@ import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.ts";
 import { getGroup } from "../../../database/groupDB.ts";
 
-const girlsCommand: Command = {
+const loliCommand: Command = {
   name: "loli",
   aliases: ["nsfwloli"],
   description: "Envia imagens NSFW",
