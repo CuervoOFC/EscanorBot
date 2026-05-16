@@ -6,29 +6,40 @@ import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
 import { getBotConfig } from "../../../config.js";
 
-const menuGeralCommand: Command = {
+const menugeralCommand: Command = {
   name: "menugeral",
   aliases: ["mgeral"],
-  description: "Mostra os comandos gerais",
+  description: "Mostra o menu geral",
   category: "geral",
   async execute({ misa, message, from, prefix }) {
     const config = await getBotConfig();
 
+    const menuText = [
+          `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
+          "│",
+          `│  👤 *Dono:* ${config.ownerName}`,
+          `│`,
+          "├ 〔 geral 〕",
+          `│  ♡ ${prefix}ping`,
+          `│  ♡ ${prefix}escanor`,
+          `│  ♡ ${prefix}imagen`,
+          `│  ♡ ${prefix}pinvid`,
+          `│  ♡ ${prefix}link`,
+          `│  ♡ ${prefix}remini`,
+          `│  ♡ ${prefix}tourl`,
+          "│",
+          "‧₊˚ ────────────────˚₊‧",
+    ].join("\n");
+
     await misa.sendMessage(
       from,
       {
-        text: [
-          `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
-          "│",
-          "├ 〔 geral 〕",
-          `│  ♡ ${prefix}ping`,
-          "│",
-          "‧₊˚ ────────────────˚₊‧",
-        ].join("\n"),
+        image: { url: config.botImage },
+        caption: menuText,
       },
       { quoted: message as WAMessage },
     );
   },
 };
 
-export default menuGeralCommand;
+export default menugeralCommand;
