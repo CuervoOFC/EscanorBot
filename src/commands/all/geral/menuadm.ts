@@ -6,21 +6,16 @@ import { WAMessage } from "baileys";
 import { Command } from "../../../types/Command.js";
 import { getBotConfig } from "../../../config.js";
 
-const menuAdmCommand: Command = {
-  name: "menuadm",
-  aliases: ["madm", "menuadmin"],
-  description: "Mostra os comandos de administração",
+const menuCommand: Command = {
+  name: "menu",
+  aliases: ["help", "ajuda", "comandos"],
+  description: "Mostra o menu principal com imagem",
   category: "geral",
-  groupOnly: true,
-  adminOnly: true,
   async execute({ misa, message, from, prefix }) {
     const config = await getBotConfig();
 
-    await misa.sendMessage(
-      from,
-      {
-        text: [
-          `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
+    const menuText = [
+      `‧₊˚ ✿ ── ${config.botName} ──✿ ˚₊‧`,
           "│",
           "├ 〔 grupo 〕",
           `│  ♡ ${prefix}gp`,
@@ -30,6 +25,7 @@ const menuAdmCommand: Command = {
           `│  ♡ ${prefix}nomegp`,
           `│  ♡ ${prefix}descgp`,
           `│  ♡ ${prefix}tag`,
+          `│  ♡ ${prefix}del`,
           "│",
           "├ 〔 bem-vindo 〕",
           `│  ♡ ${prefix}bemvindo`,
@@ -37,11 +33,17 @@ const menuAdmCommand: Command = {
           `│  ♡ ${prefix}midiabv`,
           "│",
           "‧₊˚ ────────────────˚₊‧",
-        ].join("\n"),
+    ].join("\n");
+
+    await misa.sendMessage(
+      from,
+      {
+        image: { url: config.botImage },
+        caption: menuText,
       },
       { quoted: message as WAMessage },
     );
   },
 };
 
-export default menuAdmCommand;
+export default menuCommand;
