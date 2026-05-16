@@ -8,8 +8,8 @@ import {
   AntiLinkPunicao,
   getGroup,
   saveGroup,
-} from "../../../database/groupDB.js";
-import { Command } from "../../../types/Command.js";
+} from "../../../database/groupDB.ts";
+import { Command } from "../../../types/Command.ts";
 
 const PARAMS = [
   "@usuario   → menciona o usuário",
