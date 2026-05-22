@@ -41,7 +41,7 @@ async function downloadMp4(urlInput: string): Promise<Mp4Response> {
 
 const mp4Command: Command = {
   name: "mp4",
-  aliases: ["video"],
+  aliases: ["video2"],
   description: "Descarga videos de YouTube",
   category: "downloads",
 
